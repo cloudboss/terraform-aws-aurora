@@ -23,6 +23,11 @@ output "cluster" {
   value       = aws_rds_cluster.it
 }
 
+output "cluster_parameter_group" {
+  description = "An object representing the RDS cluster parameter group."
+  value       = aws_rds_cluster_parameter_group.it
+}
+
 output "instances" {
   description = "A list of objects representing the RDS cluster instances."
   value       = aws_rds_cluster_instance.them

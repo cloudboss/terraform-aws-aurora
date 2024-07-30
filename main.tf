@@ -52,25 +52,26 @@ resource "aws_db_subnet_group" "it" {
 }
 
 resource "aws_rds_cluster" "it" {
-  apply_immediately             = var.apply_immediately
-  backup_retention_period       = var.backups.retention_period
-  cluster_identifier            = var.name
-  database_name                 = var.database.name
-  db_subnet_group_name          = aws_db_subnet_group.it.name
-  enable_http_endpoint          = var.enable_http_endpoint
-  engine                        = var.engine.type
-  engine_mode                   = local.engine_mode
-  engine_version                = var.engine.version
-  kms_key_id                    = data.aws_kms_key.storage.arn
-  manage_master_user_password   = var.database.manage_password
-  master_user_secret_kms_key_id = one(data.aws_kms_key.password[*].arn)
-  master_username               = var.database.username
-  master_password               = local.master_password
-  preferred_backup_window       = var.backups.preferred_window
-  skip_final_snapshot           = var.skip_final_snapshot
-  storage_encrypted             = true
-  tags                          = var.tags
-  vpc_security_group_ids        = var.security_group_ids
+  apply_immediately               = var.apply_immediately
+  backup_retention_period         = var.backups.retention_period
+  cluster_identifier              = var.name
+  database_name                   = var.database.name
+  db_cluster_parameter_group_name = one(aws_rds_cluster_parameter_group.it[*].name)
+  db_subnet_group_name            = aws_db_subnet_group.it.name
+  enable_http_endpoint            = var.enable_http_endpoint
+  engine                          = var.engine.type
+  engine_mode                     = local.engine_mode
+  engine_version                  = var.engine.version
+  kms_key_id                      = data.aws_kms_key.storage.arn
+  manage_master_user_password     = var.database.manage_password
+  master_user_secret_kms_key_id   = one(data.aws_kms_key.password[*].arn)
+  master_username                 = var.database.username
+  master_password                 = local.master_password
+  preferred_backup_window         = var.backups.preferred_window
+  skip_final_snapshot             = var.skip_final_snapshot
+  storage_encrypted               = true
+  tags                            = var.tags
+  vpc_security_group_ids          = var.security_group_ids
 
   dynamic "serverlessv2_scaling_configuration" {
     for_each = var.serverless_v2 == null ? [] : [1]
@@ -92,4 +93,22 @@ resource "aws_rds_cluster_instance" "them" {
   instance_class       = local.instance_class
   monitoring_interval  = var.monitoring.interval
   monitoring_role_arn  = var.monitoring.role_arn
+}
+
+resource "aws_rds_cluster_parameter_group" "it" {
+  count = var.parameter_group == null ? 0 : 1
+
+  description = var.name
+  family      = var.parameter_group.family
+  name        = var.name
+  tags        = var.tags
+
+  dynamic "parameter" {
+    for_each = var.parameter_group.parameters
+    content {
+      name         = parameter.value.name
+      value        = parameter.value.value
+      apply_method = parameter.value.apply_method
+    }
+  }
 }

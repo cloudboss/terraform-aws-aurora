@@ -109,6 +109,19 @@ variable "network_type" {
   }
 }
 
+variable "parameter_group" {
+  type = object({
+    family = string
+    parameters = list(object({
+      name         = string
+      value        = string
+      apply_method = optional(string, null)
+    }))
+  })
+
+  default = null
+}
+
 variable "serverless_v2" {
   type = object({
     max_capacity = number
