@@ -60,6 +60,7 @@ resource "aws_rds_cluster" "it" {
   enable_http_endpoint          = var.enable_http_endpoint
   engine                        = var.engine.type
   engine_mode                   = local.engine_mode
+  engine_version                = var.engine.version
   kms_key_id                    = data.aws_kms_key.storage.arn
   manage_master_user_password   = var.database.manage_password
   master_user_secret_kms_key_id = one(data.aws_kms_key.password[*].arn)
